@@ -1,17 +1,6 @@
 import { useState } from "react";
 
-//Propiedades o props que recibe el componente Square: value, onSquareClick
 function Square({ value, onSquareClick }) {
-  //Indica que al componente Square se le puede pasar un objeto llamado value
-  //Variable de estado
-  //const [value, setValue] = useState(null);
-
-  //Creamos una funcion para manejar el evento clic en el boton
-  /* const handleClick = () => {
-    console.log("Hiciste clic!");
-    setValue('X');
-  }; */
-
   return (
     <button className="square" onClick={onSquareClick}>
       {value}
@@ -21,18 +10,10 @@ function Square({ value, onSquareClick }) {
 
 //El componente Board está totalmente controlado por las props que le pasa el componente Game
 function Board({ xIsNext, squares, onPlay }) {
-  //Variable de estado
-  //const [squares, setSquares] = useState(Array(9).fill(null)); //Crea una matriz con nueve elementos y establece cada uno de ellos en null
-  /* useState() declara una variable de estado squares que inicialmente se establece en esa matriz. 
-  Cada entrada en la matriz corresponde al valor de un cuadrado. */
 
-  // const [xIsNext, setXIsNext] = useState(true);
-  /* Cada vez que un jugador se mueve, xIsNext (valor booleano) se invertirá para 
-  determinar qué jugador es el siguiente y se guardará el estado del juego */
-
-  //Funcion para actualizar la matriz/array que contiene el estado del tablero
+  //Funcion para actualizar el array que contiene el estado del tablero
   const handleClick = (i) => {
-    //Comprobamos si esa posicion contiene el valor 'X' o una 'O' o si hay un ganador
+    //Comprobamos si esa posicion contiene el valor 'X' o 'O' o si hay un ganador
     if (squares[i] || calculateWinner(squares)) {
       return; //Salimos de la funcion
     }
@@ -47,8 +28,6 @@ function Board({ xIsNext, squares, onPlay }) {
       nextSquares[i] = "O";
     }
 
-    //setSquares(nextSquares);
-    //setXIsNext(!xIsNext); //Invertimos el valor de la variable xIsNext (si es true, cambiamos a false y viceversa)
     onPlay(nextSquares);
   };
 
@@ -86,72 +65,58 @@ function Board({ xIsNext, squares, onPlay }) {
 
 export default function Game() {
   //Variables de estado
-  //const [xIsNext, setXIsNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]); //Matriz con un solo elemento, que a su vez es una matriz de 9 nulls
   const [currentMove, setCurrentMove] = useState(0);
 
-  //const currentSquares = history[history.length - 1];
   const currentSquares = history[currentMove];
 
   const xIsNext = currentMove % 2 === 0; //Si el numero es par devuelve true y si es impar false
 
   const handlePlay = (nextSquares) => {
-    
-    // setHistory([...history, nextSquares]); //crea una nueva matriz que contiene todos los elementos en history, seguido de nextSquares
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
 
     setHistory(nextHistory);
     setCurrentMove(nextHistory.length - 1); //Cada vez que se realiza un movimiento es necesario actualizar currentMove para que apunte a la ultima entrada del historial
-    //setXIsNext(!xIsNext);
+
+  };
+
+  const jumpTo = (nextMove) => {
+    setCurrentMove(nextMove);
+    
+  };
+
+  const moves = history.map((squares, move) => {
+    let description;
+
+    if (move > 0) {
+      description = "Ir al movimiento # " + move;
+    } else {
+      description = "Ir al inicio del juego";
     }
 
-    const jumpTo = (nextMove) => {
-      setCurrentMove(nextMove);
-      //setXIsNext(nextMove % 2 === 0); //Establecemos si xIsNext es true si el numero al que estamos cambiando currentMove es par
-    };
-
-    //Cuando recorremos la matriz history dentro de la funcion que hemos pasado a map, el argumento squares recorre cada
-    //elemento de history y el argumento move recorre cada indice de la matriz (0,1,2,...)
-    const moves = history.map((squares, move) => {
-      let description;
-
-      if (move > 0) {
-        description = "Ir al movimiento # " + move;
-      } else {
-        description = "Ir al inicio del juego";
-      }
-
-      /* Para cada movimiento en el historial del juego, creamos un elemento <li> que contiene un boton
+    /* Para cada movimiento en el historial del juego, creamos un elemento <li> que contiene un boton.
       El boton tiene un controlador click que llama a la funcion jumpTo.
       Cada movimiento pasado tiene una identificación única asociada: es el número secuencial del movimiento. 
       Los movimientos nunca se reordenarán, eliminarán o insertarán en el medio, por lo que es seguro usar el 
       índice de movimiento como key */
-      return (
-        <li key={move}>
-          <button onClick={() => jumpTo(move)}>{description}</button>
-        </li>
-      );
-    });
-
     return (
-      <div className="game">
-        <div className="game-board">
-          <Board
-            xIsNext={xIsNext}
-            squares={currentSquares}
-            onPlay={handlePlay}
-          />
-        </div>
-        <div className="game-info">
-          <ol>{moves}</ol>
-        </div>
-      </div>
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
     );
-  };
+  });
 
-
-/* export: hace que esta función sea accesible fuera de este archivo
-default: le dice a otros archivos que usan su codigo que es la funcion principal en su archivo */
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
+}
 
 //Funcion que determina si hay un ganador
 const calculateWinner = (squares) => {
